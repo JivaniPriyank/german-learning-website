@@ -23,7 +23,20 @@ const PATHS = {
   plus: <path d="M12 5v14M5 12h14" />,
   trash: <path d="M4.5 7h15M9.5 7V4.5h5V7M6.5 7l1 12.5h9l1-12.5" />,
   again: <path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3M4.5 4.5v4h4" />,
+  up: <path d="m6 15 6-6 6 6" />,
+  down: <path d="m6 9 6 6 6-6" />,
+  // icons a teacher can give one of their sections
+  star: <path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z" />,
+  book: <path d="M5 4.5h9.5a3 3 0 0 1 3 3V20H8a3 3 0 0 1-3-3zM5 17a3 3 0 0 1 3-3h9.5" />,
+  chat: <path d="M4 5.5h16v10H9l-5 4z" />,
+  headphones: <path d="M4 15v-3a8 8 0 0 1 16 0v3M4 15h3v5H4zM17 15h3v5h-3z" />,
+  bulb: <path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9V16h7v-2.1A6 6 0 0 0 12 3z" />,
+  flag: <path d="M5 21V4M5 4h11l-2 4 2 4H5" />,
+  globe: <path d="M12 3.5a8.5 8.5 0 1 0 0 17a8.5 8.5 0 1 0 0-17M3.5 12h17M12 3.5c2.5 2.5 2.5 14.5 0 17M12 3.5c-2.5 2.5-2.5 14.5 0 17" />,
+  pencil: <path d="M4 20h4L19 9l-4-4L4 16zM13.5 6.5l4 4" />,
 };
+
+export const SECTION_ICONS = ["star", "book", "chat", "headphones", "bulb", "flag", "globe", "pencil"];
 
 export default function Icon({ name, label }) {
   return (
@@ -35,13 +48,35 @@ export default function Icon({ name, label }) {
   );
 }
 
-export function BrandMark() {
+// The German Lab logo: a flask with two speech bubbles and a German-flag drop,
+// redrawn as a vector from the logo on the teacher's lesson slides.
+export function BrandMark({ className = "brand-mark" }) {
   return (
-    <svg className="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
-      <rect x="1" y="1" width="30" height="30" rx="8" fill="#18203A" />
-      <path d="M1 11.5h30M1 21h30M11.5 1v30M21 1v30" stroke="#fff" strokeOpacity=".14" />
-      <path d="M22.5 11.2a7.4 7.4 0 1 0 1.2 6.1h-6.6" fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx="25.5" cy="25.5" r="2.4" fill="#CF3348" />
+    <svg className={className} viewBox="-1 1.5 66 66" aria-hidden="true">
+      <defs>
+        <clipPath id="glm-body"><circle cx="18" cy="51.5" r="9.6" /></clipPath>
+        <clipPath id="glm-flag"><circle cx="22.5" cy="55.5" r="3.4" /></clipPath>
+      </defs>
+      <circle cx="46.5" cy="25" r="9" fill="#35C2BC" />
+      <path d="M40.5 30.5 L37.5 37 L45 32.6 Z" fill="#35C2BC" />
+      <path d="M42.5 22.5h8M42.5 26h8M42.5 29.5h5" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" fill="none" opacity=".9" />
+      <circle cx="31" cy="14.5" r="11" fill="#1F3A70" />
+      <path d="M24.2 22.5 L22 29.5 L30 24.8 Z" fill="#1F3A70" />
+      <path d="M24.5 14.5v0M27 12.5v4M29.5 10v9M32 12v5M34.5 9.5v10M37 13v3" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" fill="none" />
+      <circle cx="19" cy="32" r="2" fill="#1F3A70" />
+      <circle cx="22.6" cy="29" r="1.3" fill="#1F3A70" />
+      <path d="M14 35.5h8M15 35.5v7.2a11 11 0 1 0 6 0v-7.2" fill="#fff" stroke="#1F3A70" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+      <g clipPath="url(#glm-body)"><path d="M6 50.5q3-2.6 6 0t6 0t6 0t6 0V64H6Z" fill="#1F3A70" /></g>
+      <circle cx="16.4" cy="46" r="1.1" fill="#1F3A70" />
+      <circle cx="19.6" cy="43.6" r=".8" fill="#1F3A70" />
+      <circle cx="12.8" cy="54.2" r="1.3" fill="#fff" />
+      <circle cx="15.6" cy="57.6" r="1" fill="#F4C430" />
+      <circle cx="12.6" cy="58.6" r=".8" fill="#fff" opacity=".8" />
+      <g clipPath="url(#glm-flag)">
+        <rect x="19" y="52" width="7" height="2.4" fill="#111" />
+        <rect x="19" y="54.3" width="7" height="2.4" fill="#DD2B1C" />
+        <rect x="19" y="56.6" width="7" height="2.4" fill="#FFCE00" />
+      </g>
     </svg>
   );
 }
