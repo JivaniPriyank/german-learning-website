@@ -68,8 +68,8 @@ def sections_for_level(level):
 
 
 def menu_sections(user):
-    """Sections a student sees in the menu: visible, at the level they're studying, with at
-    least one published lesson."""
+    """Sections a student could see in the menu: visible, at the level they're studying, with at
+    least one published lesson. (The menu now links to Meine Lektionen instead.)"""
     level = services.current_level(user)
     if level is None:
         return []
@@ -298,7 +298,7 @@ def student_section(request, pk):
 def _student_lesson(request, pk):
     lesson = get_object_or_404(Lesson.objects.select_related("section", "section__level"), pk=pk)
     _visible_section(request, lesson.section_id)
-    if not lesson.is_published and not request.user.is_teacher:
+    if not request.user.is_teacher and (not lesson.is_published or not lesson.section.is_taught):
         raise Http404
     return lesson
 

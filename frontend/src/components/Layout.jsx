@@ -71,16 +71,19 @@ function Count({ n, label }) {
   return <span className="count" aria-label={label ? `${n} ${label}` : undefined}>{n}</span>;
 }
 
-const STUDENT_MORE = ["/grammar", "/videos", "/progress", "/account", "/more", "/sections"];
-const TEACHER_MORE = ["/teacher/content", "/teacher/classes", "/teacher/videos", "/grammar", "/videos", "/account", "/more", "/words", "/practice", "/speaking"];
+const STUDENT_MORE = ["/videos", "/progress", "/account", "/more", "/grammar", "/practice"];
+const TEACHER_MORE = ["/teacher/students", "/teacher/content", "/teacher/classes", "/teacher/videos", "/videos", "/account", "/more",
+  "/lektionen", "/sections", "/exams", "/speaking", "/words", "/practice", "/grammar"];
 
 export function AppLayout() {
-  const { user, counts, sections = [] } = useSession();
+  const { user, counts } = useSession();
   const { pathname } = useLocation();
   const signOut = useSignOut();
   const t = user.is_teacher;
   useTeacherLiveUpdates(t);
   const moreActive = (t ? TEACHER_MORE : STUDENT_MORE).some((p) => pathname === p || pathname.startsWith(p + "/"));
+  // A Lektion's pages (/sections/…) and its word flashcards belong to Meine Lektionen.
+  const inLektion = pathname.startsWith("/sections/") || pathname.startsWith("/words/");
 
   return (
     <div className="shell">
@@ -95,6 +98,7 @@ export function AppLayout() {
               <span className="nav-sep" aria-hidden="true" />
               <NavLink to="/teacher/requests"><Icon name="inbox" />Access requests<Count n={counts.pending_requests} label="waiting" /></NavLink>
               <NavLink to="/teacher/speaking"><Icon name="speaking" />Speaking answers<Count n={counts.speaking_waiting} label="waiting" /></NavLink>
+              <NavLink to="/teacher/writing"><Icon name="writing" />Writing answers<Count n={counts.writing_waiting} label="waiting" /></NavLink>
               <NavLink to="/teacher/students"><Icon name="users" />Students</NavLink>
               <NavLink to="/teacher/classes"><Icon name="classes" />Classes</NavLink>
               <NavLink to="/teacher/videos"><Icon name="upload" />My videos</NavLink>
@@ -107,16 +111,11 @@ export function AppLayout() {
               <span className="nav-sep" aria-hidden="true" />
             </>
           )}
-          <NavLink to="/words"><Icon name="words" />Words</NavLink>
-          <NavLink to="/practice"><Icon name="practice" />Practice</NavLink>
+          <Link to="/lektionen" aria-current={pathname === "/lektionen" || inLektion ? "page" : undefined}><Icon name="lektionen" />Meine Lektionen</Link>
+          <NavLink to="/exams"><Icon name="exam" />Exam practice</NavLink>
           <NavLink to="/speaking"><Icon name="speaking" />Speaking</NavLink>
-          <NavLink to="/grammar"><Icon name="grammar" />Grammar</NavLink>
           <NavLink to="/videos"><Icon name="videos" />Videos</NavLink>
           {!t && <NavLink to="/progress"><Icon name="progress" />Progress</NavLink>}
-          {sections.length > 0 && <span className="nav-label">{t ? "Your sections" : "From your teacher"}</span>}
-          {sections.map((x) => (
-            <NavLink key={x.id} to={`/sections/${x.id}`}><Icon name={x.icon} />{x.title}</NavLink>
-          ))}
         </nav>
         <div className="sidebar-foot">
           <Link className="who" to="/account">
@@ -138,13 +137,13 @@ export function AppLayout() {
             <NavLink className="tab" to="/teacher" end><Icon name="today" />Home</NavLink>
             <NavLink className="tab" to="/teacher/requests"><Icon name="inbox" />Requests<Count n={counts.pending_requests} /></NavLink>
             <NavLink className="tab" to="/teacher/speaking"><Icon name="speaking" />Speaking<Count n={counts.speaking_waiting} /></NavLink>
-            <NavLink className="tab" to="/teacher/students"><Icon name="users" />Students</NavLink>
+            <NavLink className="tab" to="/teacher/writing"><Icon name="writing" />Writing<Count n={counts.writing_waiting} /></NavLink>
           </>
         ) : (
           <>
             <NavLink className="tab" to="/today"><Icon name="today" />Home</NavLink>
-            <NavLink className="tab" to="/words"><Icon name="words" />Words</NavLink>
-            <NavLink className="tab" to="/practice"><Icon name="practice" />Practice</NavLink>
+            <Link className="tab" to="/lektionen" aria-current={pathname === "/lektionen" || inLektion ? "page" : undefined}><Icon name="lektionen" />Lektionen</Link>
+            <NavLink className="tab" to="/exams"><Icon name="exam" />Exams</NavLink>
             <NavLink className="tab" to="/speaking"><Icon name="speaking" />Speaking</NavLink>
           </>
         )}

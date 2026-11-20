@@ -95,6 +95,7 @@ class StudentSectionTests(ApiCase):
         super().setUpTestData()
         call_command("add_alphabet_lessons", stdout=io.StringIO())  # levels exist now
         cls.section = Section.objects.get(title=SECTION_TITLE)
+        Section.objects.filter(pk=cls.section.pk).update(is_taught=True)  # pages open once a Lektion is taught
         cls.practice = cls.section.lessons.get(title="Practise the alphabet")
 
     def setUp(self):
@@ -163,10 +164,15 @@ class A1CourseTests(ApiCase):
             blocks, errors = clean_blocks(lesson.blocks)
             self.assertEqual(errors, {}, lesson.title)
             self.assertEqual(blocks, lesson.blocks, lesson.title)
-        uebungen = l2.lessons.get(title="Übungen")
-        self.assertEqual(exercise_count(uebungen.blocks), 14)
-        blank = uebungen.blocks[0]["items"][1]
+        # The exercises are practice sets now (the PDF's own ones first); the answer keys' mistakes are fixed.
+        self.assertEqual([s.practice_sets.count() for s in (l1, l2)], [5, 7])
+        self.assertFalse(l2.lessons.filter(title="Übungen").exists())
+        blank = l2.practice_sets.get(title="Übung 1: Lückentext").items[1]
         self.assertEqual(blank["answer"], "Viertel")  # the slide's answer key says "fünf" (3:05)
+        l3 = Section.objects.get(title__startswith="Lektion 3")
+        self.assertEqual((l3.topic.items.count(), l3.lessons.count(), l3.writing_tasks.count()), (20, 5, 6))
+        self.assertEqual(l3.practice_sets.get(title="Übung 1: Lückentext").items[4]["answer"], "spricht|sprechen")
+        self.assertFalse(l3.is_taught)  # new Lektionen wait until the teacher marks them as taught
 
     def test_student_sees_goals_words_and_homework(self):
         self.client.force_login(self.student)

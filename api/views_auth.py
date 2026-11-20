@@ -22,6 +22,12 @@ from .utils import body, fail, form_errors, login_required, methods, ok
 User = get_user_model()
 
 
+def _writing_waiting():
+    from .views_lektionen import writing_waiting_count
+
+    return writing_waiting_count()
+
+
 def session_payload(request):
     u = request.user
     levels = [s.level(lv) for lv in Level.objects.filter(is_active=True)]
@@ -33,6 +39,7 @@ def session_payload(request):
         counts = {
             "pending_requests": AccessRequest.objects.filter(status=AccessRequest.Status.PENDING).count(),
             "speaking_waiting": SpeakingSubmission.objects.filter(reviewed_at__isnull=True).count(),
+            "writing_waiting": _writing_waiting(),
         }
     from .views_sections import menu_sections
 

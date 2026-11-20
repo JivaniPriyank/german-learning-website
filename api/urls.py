@@ -3,6 +3,8 @@ from django.urls import path
 from . import views_auth as auth
 from . import views_content as content
 from . import views_sections as sections
+from . import views_exams as exams
+from . import views_lektionen as lek
 from . import views_student as student
 from . import views_teacher as teacher
 
@@ -45,6 +47,14 @@ urlpatterns = [
     path("sections/<int:pk>/", sections.student_section, name="section"),
     path("lessons/<int:pk>/", sections.student_lesson, name="lesson"),
     path("lessons/<int:pk>/done/", sections.lesson_done, name="lesson_done"),
+    path("lektionen/", lek.lektionen, name="lektionen"),
+    path("lektionen/<int:pk>/", lek.lektion, name="lektion"),
+    path("practice-sets/<int:pk>/", lek.practice_set, name="practice_set"),
+    path("practice-sets/<int:pk>/result/", lek.practice_result, name="practice_result"),
+    path("writing/<int:pk>/", lek.writing_answer, name="writing_answer"),
+    path("exams/", exams.exams, name="exams"),
+    path("exams/parts/<int:pk>/", exams.exam_part, name="exam_part"),
+    path("exams/parts/<int:pk>/result/", exams.exam_result, name="exam_result"),
     # teacher
     path("teacher/overview/", teacher.overview, name="t_overview"),
     path("teacher/requests/", teacher.requests, name="t_requests"),
@@ -74,6 +84,9 @@ urlpatterns = [
     path("teacher/content/speaking/", content.speaking_create, name="c_speaking_create"),
     path("teacher/content/speaking/options/", content.speaking_options, name="c_speaking_options"),
     path("teacher/content/speaking/<int:pk>/", content.speaking_detail, name="c_speaking"),
+    path("teacher/lektionen/<int:pk>/taught/", lek.mark_taught, name="mark_taught"),
+    path("teacher/writing/", lek.writing_inbox, name="writing_inbox"),
+    path("teacher/writing/<int:pk>/", lek.writing_check, name="writing_check"),
     path("teacher/content/sections/", sections.sections, name="c_sections"),
     path("teacher/content/sections/<int:pk>/", sections.section_detail, name="c_section"),
     path("teacher/content/sections/<int:pk>/lessons/", sections.lesson_create, name="c_lesson_create"),

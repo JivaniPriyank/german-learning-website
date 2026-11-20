@@ -10,7 +10,7 @@ from accounts.models import AccessRequest, Classroom
 from content.models import GrammarTopic, Level, QuizQuestion, SpeakingTask, Video, VocabularyItem
 from dashboard.forms import FeedbackForm, VideoForm
 from learning import services
-from learning.models import CardReview, QuizAttempt, SpeakingPractice, SpeakingSubmission, VideoView
+from learning.models import CardReview, QuizAttempt, SpeakingPractice, SpeakingSubmission, VideoView, WritingAnswer
 
 from . import serializers as s
 from .utils import body, fail, form_errors, methods, ok, page_info, teacher_required
@@ -45,6 +45,7 @@ def overview(request):
         "student_count": approved.count(), "class_count": Classroom.objects.count(),
         "video_count": Video.objects.count(),
         "speaking_waiting": SpeakingSubmission.objects.filter(reviewed_at__isnull=True).count(),
+        "writing_waiting": WritingAnswer.objects.filter(checked_at__isnull=True).count(),
         "content": {"words": VocabularyItem.objects.count(), "questions": QuizQuestion.objects.count(),
                     "speaking": SpeakingTask.objects.count()},
         "recent": [{**s.attempt_summary(a), "student": {"id": a.user_id, "full_name": a.user.full_name}} for a in recent],

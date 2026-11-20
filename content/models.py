@@ -66,6 +66,7 @@ class VocabularyItem(models.Model):
     german = models.CharField(max_length=120, help_text="The word without its article, e.g. 'Mutter'.")
     english = models.CharField(max_length=160)
     example = models.CharField(max_length=240, blank=True)
+    extra = models.BooleanField(default=False, help_text="Not in the lesson PDF: an extra word for the same topic.")
     order = models.PositiveSmallIntegerField(default=0)
 
     class Meta:
@@ -260,6 +261,9 @@ class Section(models.Model):
         help_text="The section's word list, practised in Words.",
     )
     homework = models.TextField(blank=True)
+    is_taught = models.BooleanField(
+        default=False, help_text="Students can open a Lektion only after it has been taught in class.")
+    taught_at = models.DateTimeField(null=True, blank=True)
     order = models.PositiveSmallIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -295,6 +299,98 @@ def validate_video_size(file):
     limit = settings.VIDEO_MAX_UPLOAD_MB * 1024 * 1024
     if file.size > limit:
         raise ValidationError(f"Videos can be at most {settings.VIDEO_MAX_UPLOAD_MB} MB.")
+
+
+class PracticeSet(models.Model):
+    """One set of questions in a Lektion (section), checked right away or timed like an exam.
+    See content/practice.py for the shape of `items` for each kind."""
+
+    class Kind(models.TextChoices):
+        CHOICE = "choice", "Choose the answer"
+        BLANKS = "blanks", "Type the missing word"
+        TRUE_FALSE = "tf", "Read, then richtig or falsch"
+        LISTEN_TYPE = "listen_type", "Listen, then type"
+
+    class Source(models.TextChoices):
+        LESSON = "lesson", "From the lesson"
+        EXTRA = "extra", "Extra"
+        BOTH = "both", "From the lesson + extra"
+
+    section = models.ForeignKey(Section, on_delete=models.CASCADE, related_name="practice_sets")
+    title = models.CharField(max_length=120)
+    source = models.CharField(max_length=8, choices=Source.choices, default=Source.LESSON)
+    kind = models.CharField(max_length=12, choices=Kind.choices)
+    intro = models.CharField(max_length=300, blank=True, help_text="The instruction, e.g. 'Setzen Sie den Artikel ein.'")
+    text = models.TextField(blank=True, help_text="A reading text (richtig/falsch sets).")
+    items = models.JSONField(default=list)
+    example = models.JSONField(default=dict, blank=True,
+                               help_text="A solved question shown first as a model (same shape as an item; not scored).")
+    minutes = models.PositiveSmallIntegerField(default=0, help_text="Time limit in exam mode; 0 = half a minute per question.")
+    is_published = models.BooleanField(default=True)
+    order = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        ordering = ["section", "order", "id"]
+
+    def __str__(self):
+        return f"{self.section.title} · {self.title}"
+
+
+class WritingTask(models.Model):
+    """A writing task of a Lektion: students write an answer, the teacher checks it."""
+
+    section = models.ForeignKey(Section, on_delete=models.CASCADE, related_name="writing_tasks")
+    title = models.CharField(max_length=120)
+    source = models.CharField(max_length=80, blank=True, help_text="Where it comes from, e.g. 'Übung 3, Aufgabe 1'.")
+    prompt = models.TextField(help_text="The task, as the student sees it.")
+    is_published = models.BooleanField(default=True)
+    order = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        ordering = ["section", "order", "id"]
+
+    def __str__(self):
+        return f"{self.section.title} · {self.title}"
+
+
+class ExamPart(models.Model):
+    """One practice set of an exam part, e.g. Goethe A1 · Hören Teil 1, laid out like the real exam."""
+
+    class Exam(models.TextChoices):
+        GOETHE = "goethe", "Goethe-Zertifikat"
+        TELC = "telc", "telc Deutsch"
+
+    class Module(models.TextChoices):
+        HOEREN = "hoeren", "Hören"
+        LESEN = "lesen", "Lesen"
+        SCHREIBEN = "schreiben", "Schreiben"
+        SPRECHEN = "sprechen", "Sprechen"
+
+    class Kind(models.TextChoices):
+        LISTEN = "listen", "Listen and choose a, b or c"
+        TRUE_FALSE = "tf", "Read and choose richtig or falsch"
+
+    level = models.ForeignKey(Level, on_delete=models.PROTECT, related_name="exam_parts")
+    exam = models.CharField(max_length=8, choices=Exam.choices)
+    module = models.CharField(max_length=10, choices=Module.choices)
+    teil = models.PositiveSmallIntegerField(help_text="Part number in the real exam: 1, 2 or 3.")
+    slug = models.SlugField(max_length=90)
+    title = models.CharField(max_length=120, help_text="e.g. Kurze Gespräche")
+    instructions = models.CharField(max_length=300, help_text="The exam instruction, in German.")
+    kind = models.CharField(max_length=8, choices=Kind.choices)
+    text = models.TextField(blank=True, help_text="The reading text (richtig/falsch tasks).")
+    items = models.JSONField(default=list, help_text="The questions; see content/exam_a1.py for the shape.")
+    example = models.JSONField(default=dict, blank=True, help_text="A solved question shown first as a model (not scored).")
+    minutes = models.PositiveSmallIntegerField(default=5, help_text="Time limit in exam mode.")
+    is_published = models.BooleanField(default=True)
+    order = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        ordering = ["level__order", "exam", "module", "teil", "order", "id"]
+        constraints = [models.UniqueConstraint(fields=["level", "exam", "slug"], name="unique_exam_part_slug")]
+
+    def __str__(self):
+        return f"{self.level.code} {self.get_exam_display()} {self.get_module_display()} Teil {self.teil}: {self.title}"
 
 
 class Video(models.Model):

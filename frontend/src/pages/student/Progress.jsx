@@ -1,10 +1,8 @@
 import { Link } from "react-router-dom";
-import { Async, Empty, Meter, PageHead, RowLink, scoreClass } from "../../components/ui";
+import Icon from "../../components/Icon";
+import { Async, Meter, PageHead } from "../../components/ui";
 import { useApi, useLevelKey, useTitle } from "../../lib/hooks";
-import { formatDate, plural } from "../../lib/speech";
-import { useStartQuiz } from "./Practice";
-
-const summary_level = (state) => state.data?.level?.code || "";
+import { plural } from "../../lib/speech";
 
 // Darker squares for days with more practice.
 const shade = (n) => (n === 0 ? 0 : n <= 2 ? 1 : n <= 5 ? 2 : n <= 9 ? 3 : 4);
@@ -31,105 +29,62 @@ function ActivityCalendar({ days }) {
   );
 }
 
-// New, learning and learned words as one bar.
-function WordStages({ total, seen, learned }) {
-  const parts = [
-    { key: "learned", n: learned, label: "learned for good" },
-    { key: "learning", n: seen - learned, label: "learning" },
-    { key: "new", n: total - seen, label: "not practised yet" },
-  ];
-  return (
-    <div className="stages">
-      <div className="stages-bar" role="img" aria-label={parts.map((p) => `${p.n} ${p.label}`).join(", ")}>
-        {parts.map((p) => p.n > 0 && <span key={p.key} className={`stage-${p.key}`} style={{ flexGrow: p.n }} />)}
-      </div>
-      <ul className="stages-legend">
-        {parts.map((p) => <li key={p.key}><span className={`stage-dot stage-${p.key}`} aria-hidden="true" /><b>{p.n}</b> {p.label}</li>)}
-      </ul>
-    </div>
-  );
-}
-
+// Progress through the Lektionen taught so far, and the days practised.
 export default function Progress() {
   useTitle("Progress");
-  const state = useApi("/progress/", [useLevelKey()]);
-  const [start, busy] = useStartQuiz();
+  const levelKey = useLevelKey();
+  const state = useApi("/progress/", [levelKey]);
+  const lek = useApi("/lektionen/", [levelKey]);
   return (
-    <Async state={state}>
-      {({ summary, levels, attempts, calendar, topics }) => (
-        <>
-          <PageHead title={`Your ${summary_level(state)} progress`}>
-            <p className="muted">{summary.streak ? `${plural(summary.streak, "day")} in a row. ` : ""}A word is learned for good once you've known it three times in a row, a few days apart.</p>
-          </PageHead>
-          <div className="stats">
-            <div className="stat"><b>{summary.words_seen}</b><span>words practised, {summary.words_learned} learned for good</span></div>
-            <div className="stat"><b>{summary.quiz_accuracy != null ? `${summary.quiz_accuracy}%` : "–"}</b><span>quiz answers correct</span></div>
-            <div className="stat"><b>{summary.speaking_done}</b><span>speaking tasks practised</span></div>
-            <div className="stat"><b>{summary.videos_watched}</b><span>videos watched</span></div>
-          </div>
+    <Async state={lek}>
+      {({ level, lektionen, streak }) => {
+        const taught = lektionen.filter((x) => x.is_taught);
+        const sets = taught.reduce((a, x) => a + x.sets, 0);
+        const done = taught.reduce((a, x) => a + x.sets_done, 0);
+        return (
+          <>
+            <PageHead title={`Your ${level?.code || ""} progress`}>
+              <p className="muted">{streak ? `${plural(streak, "day")} in a row. ` : ""}Every practice set you finish counts.</p>
+            </PageHead>
+            <div className="stats">
+              <div className="stat"><b>{taught.length}<small className="stat-of"> / {lektionen.length}</small></b><span>Lektionen taught so far</span></div>
+              <div className="stat"><b>{done}<small className="stat-of"> / {sets}</small></b><span>practice sets done</span></div>
+              <div className="stat"><b>{streak || 0}</b><span>days in a row</span></div>
+            </div>
 
-          <section className="section">
-            <h2>Last 12 weeks</h2>
-            <ActivityCalendar days={calendar} />
-          </section>
-
-          {levels.map(({ level, summary: ls, decks }) => (
-            <section className="section" key={level.code}>
-              <h2>{level.code} words</h2>
-              <WordStages total={ls.words_total} seen={ls.words_seen} learned={ls.words_learned} />
-              {decks.length ? (
+            <section className="section">
+              <h2>Lektionen</h2>
+              {taught.length ? (
                 <ul className="list">
-                  {decks.map((d) => (
-                    <li key={d.slug}>
-                      <Link className="row" to={`/words/${d.level}/${d.slug}`}>
-                        <span className="row-main"><span className="row-title">{d.name}</span>
-                          <Meter percent={d.stats.percent} practised={d.stats.practised_percent}
-                            label={`${d.stats.seen} of ${d.stats.total} practised, ${d.stats.learned} learned for good`} className="deck-meter" />
-                          <span className="row-sub">{d.stats.seen} of {d.stats.total} practised{d.stats.learned ? `, ${d.stats.learned} learned for good` : ""}</span></span>
-                        <span className="row-end">{d.stats.seen}/{d.stats.total}</span>
+                  {taught.map((x) => (
+                    <li key={x.id}>
+                      <Link className="row" to={`/sections/${x.id}`}>
+                        <span className="row-main">
+                          <span className="row-title" lang="de">{x.title}</span>
+                          <span className="row-sub">{x.sets_done} of {x.sets} practice sets done</span>
+                        </span>
+                        <span className="row-end">
+                          <Meter className="meter-mini" good percent={x.sets ? Math.round((x.sets_done / x.sets) * 100) : 0} label={`${x.sets_done} of ${x.sets} done`} />
+                          <span className="chev"><Icon name="chevron" /></span>
+                        </span>
                       </Link>
                     </li>
                   ))}
                 </ul>
-              ) : <p className="muted">No word decks at this level yet.</p>}
+              ) : <p className="muted">Your first Lektion opens after it has been taught in class.</p>}
             </section>
-          ))}
 
-          {topics.length > 0 && (
-            <section className="section">
-              <div className="section-head"><h2>Grammar topics</h2><span className="muted small">Weakest first</span></div>
-              <ul className="list">
-                {topics.map((t) => (
-                  <li className="row topic-score" key={t.id}>
-                    <span className="row-main">
-                      <span className="row-title" lang="de">{t.title}</span>
-                      <Meter className="deck-meter" percent={t.percent} good={t.percent >= 70} label={`${t.percent}% right`} />
-                      <span className="row-sub">{t.right} of {plural(t.answered, "answer")} right. <Link to={`/grammar/${t.level}/${t.slug}`}>Read the rule</Link></span>
-                    </span>
-                    <span className={`badge ${scoreClass(t.right, t.answered)}`}>{t.percent}%</span>
-                    <button className="btn btn-secondary btn-small" type="button" aria-disabled={busy}
-                      aria-label={`Practise ${t.title}`} onClick={() => start(t.level, t.id)}>Practise</button>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
-
-          <section className="section">
-            <h2>Recent quizzes</h2>
-            {attempts.length ? (
-              <ul className="list">
-                {attempts.map((a) => (
-                  <RowLink key={a.id} to={`/practice/${a.id}/results`} title={a.title} sub={formatDate(a.finished_at, true)}
-                    end={<span className={`badge ${scoreClass(a.score, a.total)}`}>{a.score} / {a.total}</span>} />
-                ))}
-              </ul>
-            ) : (
-              <Empty title="No quizzes yet" action={<Link className="btn btn-primary" to="/practice">Take a quiz</Link>}>Finish a quiz and your results show up here.</Empty>
-            )}
-          </section>
-        </>
-      )}
+            <Async state={state}>
+              {({ calendar }) => (
+                <section className="section">
+                  <h2>Last 12 weeks</h2>
+                  <ActivityCalendar days={calendar} />
+                </section>
+              )}
+            </Async>
+          </>
+        );
+      }}
     </Async>
   );
 }

@@ -1,0 +1,113 @@
+/* Exam practice (/exams): the parts the lesson styles don't cover. */
+.ex-mode { display: grid; grid-template-columns: 1fr 1fr; border: 1.5px solid var(--line-strong); border-radius: var(--radius); overflow: hidden; background: var(--surface); margin-bottom: var(--s5); max-width: 560px; }
+.ex-mode button { border: 0; background: none; font: inherit; color: var(--ink); text-align: left; padding: 10px 14px; cursor: pointer; display: grid; gap: 2px; }
+.ex-mode button + button { border-left: 1.5px solid var(--line-strong); }
+.ex-mode button[aria-pressed="true"] { background: var(--royal-wash); color: var(--royal-deep); }
+.ex-mode b { font-size: 1rem; } .ex-mode span { font-size: .85rem; color: var(--ink-soft); }
+.ex-exam-head { display: flex; justify-content: space-between; align-items: baseline; gap: var(--s3); flex-wrap: wrap; margin-bottom: var(--s3); }
+.ex-exam-head h2 { margin: 0; }
+.row-end .meter-mini { margin-right: var(--s2); }
+.lsn-option.is-picked { border-color: var(--royal); background: var(--royal-wash); color: var(--royal-deep); }
+.lsn-options-col { flex-direction: column; align-items: stretch; }
+.lsn-options-col .lsn-option { text-align: left; display: flex; align-items: center; gap: 12px; }
+.ex-key { flex: none; width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid currentColor; display: grid; place-items: center; font-size: .9rem; opacity: .8; }
+.ex-voice { font-size: .85rem; color: var(--ink-soft); }
+.ex-voice.is-warn { color: var(--note); }
+.ex-script { margin: 6px 0 0; font-size: .9rem; font-style: italic; opacity: .85; }
+.ex-text { border: 1px solid var(--line); border-radius: var(--radius); padding: var(--s4) var(--s5); white-space: pre-line; font-size: 1.05rem; }
+.ex-rf { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s2); }
+.ex-rf li { display: grid; grid-template-columns: 1fr auto; gap: var(--s2) var(--s3); align-items: center; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+.ex-rf li.is-right { border-color: var(--good); background: var(--good-wash); }
+.ex-rf li.is-wrong { border-color: var(--bad); background: var(--bad-wash); }
+.ex-rf .chips { margin: 0; flex-wrap: nowrap; }
+.ex-rf .chip { cursor: pointer; font: inherit; font-weight: 600; font-size: .9rem; }
+.ex-rf .chip[aria-disabled="true"] { cursor: default; }
+.ex-rf .ex-why { grid-column: 1 / -1; font-size: .92rem; }
+.ex-timer { font-variant-numeric: tabular-nums; font-size: .9rem; padding: 4px 12px; }
+.ex-timer.is-low { background: var(--bad-wash); color: var(--bad); }
+.ex-review .row { align-items: flex-start; }
+.ex-actions { display: flex; gap: var(--s2); justify-content: flex-end; flex-wrap: wrap; }
+@media (max-width: 560px) { .ex-rf li { grid-template-columns: 1fr; } }
+.ex-question { display: grid; gap: 2px; min-width: 0; flex: 1 1 240px; }
+.lsn-play[aria-disabled="true"] { opacity: .4; cursor: not-allowed; }
+.ex-actions { margin-top: var(--s2); }
+
+/* ---------- Meine Lektionen ---------- */
+.lk-list .row { align-items: center; }
+.lk-num { flex: none; width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; font-family: var(--font-head); font-weight: 700; font-size: 1.1rem; background: var(--royal-wash); color: var(--royal-deep); }
+.lk-locked { cursor: default; }
+.lk-locked .lk-num { background: #EEF0F4; color: var(--ink-faint); }
+.lk-locked .row-title { color: var(--ink-faint); }
+.lk-lock { display: inline-flex; align-items: center; gap: 6px; font-size: .85rem; color: var(--ink-faint); white-space: nowrap; }
+.lk-lock svg { width: 16px; height: 16px; }
+.lk-teacher-row { display: flex; align-items: center; gap: var(--s3); flex-wrap: wrap; }
+.lk-teacher-link { flex: 1 1 260px; display: flex; align-items: center; gap: var(--s3); min-width: 0; color: inherit; text-decoration: none; }
+.lk-teacher-link:hover .row-title { color: var(--royal); }
+.lk-when { white-space: nowrap; }
+.lk-set .row-title { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+/* ---------- one Lektion ---------- */
+.lk-goals { list-style: none; margin: 0 0 var(--s5); padding: 0; display: grid; gap: 6px; }
+.lk-goals li { display: flex; gap: 10px; align-items: flex-start; }
+.lk-goals svg { flex: none; width: 18px; height: 18px; color: var(--good); margin-top: 3px; }
+.lk-h2 { margin: var(--s5) 0 var(--s3); }
+.lk-words-start { margin-bottom: var(--s2); }
+.lk-words { columns: 2 300px; column-gap: 0; }
+.lk-words li { break-inside: avoid; display: flex; align-items: center; gap: 12px; }
+.lk-words li .muted { flex: 1; }
+.lk-task { display: grid; gap: var(--s3); }
+.lk-task + .lk-task { margin-top: var(--s4); }
+.lk-task-head { display: flex; justify-content: space-between; gap: var(--s3); align-items: flex-start; flex-wrap: wrap; }
+.lk-task-head h3 { margin: 0; }
+.lk-note { font-size: .85rem; color: var(--ink-soft); }
+.lk-prompt { margin: 0; }
+.lk-write { display: grid; gap: var(--s2); }
+.lk-write textarea { width: 100%; min-height: 110px; font: inherit; padding: 10px 12px; border: 1.5px solid var(--line-strong); border-radius: var(--radius); resize: vertical; background: var(--surface); color: var(--ink); }
+.lk-write textarea:focus { outline: none; border-color: var(--royal); box-shadow: var(--focus); }
+.lk-answer { background: var(--paper); border-radius: var(--radius); padding: 12px 14px; white-space: pre-line; }
+.lk-comment { background: var(--good-wash); color: #164F33; border-radius: var(--radius); padding: 12px 14px; white-space: pre-line; }
+
+/* ---------- questions of a practice set ---------- */
+.lk-q { display: grid; gap: 10px; padding: var(--s4) 0; border-bottom: 1px solid #EEF0F4; }
+.lk-q:last-of-type { border-bottom: 0; }
+.lk-q .lsn-options { gap: 8px; }
+.lk-q .lsn-option { min-height: 46px; }
+.lk-q .lsn-prompt { font-size: 1.1rem; }
+.lk-hint { font-size: .85rem; color: var(--ink-soft); }
+.lk-q input.is-right { border-color: var(--good); background: var(--good-wash); }
+.lk-q input.is-wrong { border-color: var(--bad); background: var(--bad-wash); }
+.ex-num { font-weight: 600; }
+.ex-tf { padding: var(--s3) 0; }
+.ex-tf-row { display: grid; grid-template-columns: 1fr auto; gap: var(--s2) var(--s3); align-items: center; }
+.ex-tf .chips { margin: 0; flex-wrap: nowrap; }
+.ex-tf .chip { cursor: pointer; font: inherit; font-weight: 600; font-size: .9rem; }
+.ex-tf .chip[aria-disabled="true"] { cursor: default; }
+.ex-voice { margin: 0; }
+.ex-actions { align-items: center; }
+.ex-actions .muted { margin-right: auto; }
+@media (max-width: 560px) { .ex-tf-row { grid-template-columns: 1fr; } .lk-when { display: none; } }
+
+/* ---------- Üben / Prüfung: show what the switch does ---------- */
+.ex-mode-wrap { margin-bottom: var(--s5); display: grid; gap: var(--s2); max-width: 720px; }
+.ex-mode-wrap .ex-mode { margin-bottom: 0; }
+.ex-mode-hint { display: flex; gap: 10px; align-items: flex-start; margin: 0; padding: 10px 14px; border-radius: var(--radius); background: var(--royal-wash); color: var(--royal-deep); font-size: .92rem; }
+.ex-mode-hint.is-exam { background: var(--note-wash); color: #5C3D00; }
+.ex-mode-hint svg { flex: none; width: 18px; height: 18px; margin-top: 2px; }
+.ex-mode-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: var(--s4); padding: 10px 14px; border-radius: var(--radius); background: var(--royal-wash); color: var(--royal-deep); font-size: .92rem; }
+.ex-mode-bar.is-exam { background: var(--note-wash); color: #5C3D00; }
+.ex-mode-bar > svg { flex: none; width: 18px; height: 18px; }
+.ex-mode-bar > span { flex: 1 1 240px; }
+.ex-mode-badge { gap: 4px; }
+.ex-mode-badge svg { width: 13px; height: 13px; }
+
+/* ---------- worked example ---------- */
+.ex-example { display: grid; gap: 10px; padding: var(--s4); border: 1.5px dashed var(--good); border-radius: var(--radius); background: var(--good-wash); }
+.ex-example-head { margin: 0; color: #164F33; }
+.ex-example-head b { text-transform: uppercase; letter-spacing: .06em; font-size: .8rem; background: var(--good); color: #fff; padding: 2px 8px; border-radius: 999px; margin-right: 4px; }
+.ex-example-line { margin: 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 1.05rem; }
+.ex-filled { display: inline-block; min-width: 90px; padding: 6px 12px; border: 1.5px solid var(--good); border-radius: 8px; background: var(--surface); color: var(--good); font-weight: 700; }
+.ex-example .lsn-question { gap: var(--s3); }
+.ex-option-static { display: inline-flex; align-items: center; cursor: default; min-height: 42px; }
+.ex-chip-right { background: var(--good); border-color: var(--good); color: #fff; }
+.ex-example-why { margin: 0; font-size: .92rem; color: #164F33; }
+.ex-now { margin: var(--s2) 0 0; font-weight: 700; color: var(--ink-soft); text-transform: uppercase; letter-spacing: .06em; font-size: .8rem; }

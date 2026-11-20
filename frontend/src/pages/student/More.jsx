@@ -6,26 +6,26 @@ import { useSession } from "../../lib/session";
 
 export default function More() {
   useTitle("More");
-  const { user, sections = [] } = useSession();
+  const { user } = useSession();
   const signOut = useSignOut();
   return (
     <>
       <PageHead title="More" />
       <ul className="list">
-        {user.is_teacher && (
+        {user.is_teacher ? (
           <>
-            <RowLink to="/teacher/videos" icon="upload" title="My videos" />
+            <RowLink to="/teacher/students" icon="users" title="Students" />
+            <RowLink to="/teacher/content" icon="edit" title="Content" sub="Lektionen, words, exam practice" />
             <RowLink to="/teacher/classes" icon="classes" title="Classes" />
-            <RowLink to="/teacher/content" icon="edit" title="Content" sub="Words, quiz questions, grammar, speaking tasks" />
-            <RowLink to="/words" icon="words" title="Words" sub="See the student pages" />
-            <RowLink to="/practice" icon="practice" title="Practice" />
-            <RowLink to="/speaking" icon="speaking" title="Speaking" />
+            <RowLink to="/teacher/videos" icon="upload" title="My videos" />
+            <RowLink to="/lektionen" icon="lektionen" title="Meine Lektionen" sub="Mark Lektionen as taught; see the student pages" />
+            <RowLink to="/exams" icon="exam" title="Exam practice" />
+            <RowLink to="/speaking" icon="speaking" title="Speaking" sub="The student page" />
           </>
+        ) : (
+          <RowLink to="/progress" icon="progress" title="Progress" />
         )}
-        <RowLink to="/grammar" icon="grammar" title="Grammar" />
         <RowLink to="/videos" icon="videos" title="Videos" />
-        {!user.is_teacher && <RowLink to="/progress" icon="progress" title="Progress" />}
-        {sections.map((x) => <RowLink key={x.id} to={`/sections/${x.id}`} icon={x.icon} title={x.title} sub={user.is_teacher ? "Your section" : "From your teacher"} />)}
         <RowLink to="/account" icon="account" title="Your account" sub={user.email} />
       </ul>
       <button className="btn btn-secondary btn-block mt-5" type="button" onClick={signOut}><Icon name="out" />Sign out</button>

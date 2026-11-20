@@ -1,88 +1,91 @@
 import { Link, Navigate, useSearchParams } from "react-router-dom";
 import Icon from "../../components/Icon";
-import { Async, Meter, RowLink } from "../../components/ui";
+import { Async, Empty, Meter, RowLink } from "../../components/ui";
 import { useApi, useLevelKey, useTitle } from "../../lib/hooks";
-import { plural } from "../../lib/speech";
+import { formatDate, plural } from "../../lib/speech";
 import { useSession } from "../../lib/session";
 
+// The student's home: carry on with the newest Lektion, see the teacher's comments.
 export default function Today() {
   useTitle("Today");
   const { user } = useSession();
   const [params] = useSearchParams();
   const levelKey = useLevelKey();
-  const state = useApi(user.is_teacher && !params.get("as_student") ? null : "/today/", [levelKey]);
-  if (user.is_teacher && !params.get("as_student")) return <Navigate to="/teacher" replace />;
+  const asTeacher = user.is_teacher && !params.get("as_student");
+  const state = useApi(asTeacher ? null : "/lektionen/", [levelKey]);
+  if (asTeacher) return <Navigate to="/teacher" replace />;
 
   return (
     <Async state={state}>
-      {({ level, summary, ready, next_deck, unfinished, new_videos }) => (
-        <>
-          <div className="greeting">
-            <h1>Hallo, {user.first_name}!</h1>
-            <p className="muted">
-              {summary.streak ? `${plural(summary.streak, "day")} in a row. Keep it going.` : `Studying ${level.code} (${level.name}). A few minutes a day is enough.`}
-            </p>
-          </div>
-
-          {unfinished && (
-            <div className="notice notice-royal">
-              You have an unfinished quiz: <b>{unfinished.title}</b>. <Link to={`/practice/${unfinished.id}`}>Carry on</Link>
+      {({ level, lektionen, streak, feedback, new_videos }) => {
+        const taught = lektionen.filter((x) => x.is_taught);
+        const current = taught[taught.length - 1];
+        const unfinished = taught.find((x) => x.sets && x.sets_done < x.sets);
+        return (
+          <>
+            <div className="greeting">
+              <h1>Hallo, {user.first_name}!</h1>
+              <p className="muted">
+                {streak ? `${plural(streak, "day")} in a row. Keep it going.` : `Revise your ${level?.code || ""} Lektionen here after class. A few minutes a day is enough.`}
+              </p>
             </div>
-          )}
 
-          {next_deck ? (
-            <section className="focus-card paper">
-              <div>
-                <h2>Study {next_deck.name}</h2>
-                <p>{next_deck.description}. {plural(next_deck.stats.due, "card")} ready, {next_deck.stats.learned} of {next_deck.stats.total} learned so far.</p>
-                <Meter className="focus-meter" percent={next_deck.stats.percent} practised={next_deck.stats.practised_percent}
-                  label={`${next_deck.stats.seen} of ${next_deck.stats.total} practised, ${next_deck.stats.learned} learned for good`} />
-              </div>
-              <div className="actions"><Link className="btn btn-primary" to={`/words/${next_deck.level}/${next_deck.slug}/study`}>Start studying</Link></div>
-            </section>
-          ) : summary.words_total > 0 && (
-            <section className="focus-card paper">
-              <div>
-                <h2>All words reviewed for now</h2>
-                <p>Nothing is due in {level.code}. Try a quiz or a speaking task, or come back tomorrow for your next reviews.</p>
-              </div>
-              <div className="actions"><Link className="btn btn-primary" to="/practice">Take a quiz</Link></div>
-            </section>
-          )}
+            {current ? (
+              <section className="focus-card paper">
+                <div>
+                  <h2 lang="de">{current.title}</h2>
+                  <p>Your newest Lektion from class: {current.sets_done} of {current.sets} practice sets done.</p>
+                  {current.sets > 0 && <Meter good percent={Math.round((current.sets_done / current.sets) * 100)} label={`${current.sets_done} of ${current.sets} practice sets done`} />}
+                </div>
+                <div className="actions"><Link className="btn btn-primary" to={`/sections/${current.id}`}>{current.sets_done ? "Carry on" : "Start practising"}</Link></div>
+              </section>
+            ) : (
+              <Empty title="Nothing to revise yet">Your first Lektion opens here after it has been taught in class.</Empty>
+            )}
 
-          <section className="section">
-            <h2 className="visually-hidden">Go to</h2>
-            <div className="quick">
-              <Link to="/words"><Icon name="words" />Words<span>{ready} ready to study</span></Link>
-              <Link to="/practice"><Icon name="practice" />Practice<span>{summary.quiz_accuracy != null ? `${summary.quiz_accuracy}% correct so far` : "Grammar quizzes"}</span></Link>
-              <Link to="/speaking"><Icon name="speaking" />Speaking<span>Record exam answers</span></Link>
-              <Link to="/grammar"><Icon name="grammar" />Grammar<span>Rules and tables</span></Link>
-            </div>
-          </section>
+            {feedback.length > 0 && (
+              <section className="section">
+                <div className="section-head"><h2>Comments from your teacher</h2></div>
+                <ul className="list">
+                  {feedback.map((f) => (
+                    <li key={f.id}>
+                      <Link className="row" to={`/sections/${f.section}?tab=schreiben`}>
+                        <Icon name="writing" />
+                        <span className="row-main">
+                          <span className="row-title" lang="de">{f.task}</span>
+                          <span className="row-sub">“{f.feedback}” · {formatDate(f.checked_at)}</span>
+                        </span>
+                        <span className="row-end"><span className="chev"><Icon name="chevron" /></span></span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
 
-          <section className="section">
-            <div className="section-head"><h2>Your {level.code} progress</h2><Link to="/progress">See all progress</Link></div>
-            <div className="stats">
-              <Link className="stat" to="/words"><b>{summary.words_seen}<small className="stat-of"> / {summary.words_total}</small></b><span>words practised, {summary.words_learned} learned for good</span></Link>
-              <Link className="stat" to="/practice"><b>{summary.quizzes_done}</b><span>quizzes finished</span></Link>
-              <Link className="stat" to="/speaking"><b>{summary.speaking_done}</b><span>speaking tasks practised</span></Link>
-              <Link className="stat" to="/videos"><b>{summary.videos_watched}</b><span>videos watched</span></Link>
-            </div>
-          </section>
-
-          {new_videos.length > 0 && (
             <section className="section">
-              <div className="section-head"><h2>New from your teacher</h2><Link to="/videos">All videos</Link></div>
-              <ul className="list">
-                {new_videos.map((v) => (
-                  <RowLink key={v.id} to={`/videos/${v.id}`} icon="videos" title={v.title}
-                    sub={v.grammar_topic ? v.grammar_topic.title : v.level || "For everyone"} />
-                ))}
-              </ul>
+              <h2 className="visually-hidden">Go to</h2>
+              <div className="quick">
+                <Link to="/lektionen"><Icon name="lektionen" />Meine Lektionen<span>{taught.length} {taught.length === 1 ? "Lektion" : "Lektionen"} open</span></Link>
+                <Link to="/exams"><Icon name="exam" />Exam practice<span>Goethe and telc format</span></Link>
+                <Link to="/speaking"><Icon name="speaking" />Speaking<span>Record exam answers</span></Link>
+                {unfinished && unfinished !== current
+                  ? <Link to={`/sections/${unfinished.id}`}><Icon name="practice" />Not finished<span lang="de">{unfinished.title.split(":")[0]}</span></Link>
+                  : <Link to="/progress"><Icon name="progress" />Progress<span>Your practice days</span></Link>}
+              </div>
             </section>
-          )}
-        </>
-      )}
+
+            {new_videos.length > 0 && (
+              <section className="section">
+                <div className="section-head"><h2>New from your teacher</h2><Link to="/videos">All videos</Link></div>
+                <ul className="list">
+                  {new_videos.map((v) => <RowLink key={v.id} to={`/videos/${v.id}`} icon="videos" title={v.title} sub="Not watched yet" />)}
+                </ul>
+              </section>
+            )}
+          </>
+        );
+      }}
     </Async>
   );
 }

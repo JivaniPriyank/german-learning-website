@@ -11,7 +11,10 @@ from django.utils import timezone
 
 from content.models import Level, QuizQuestion, Video, VocabularyItem
 
-from .models import CardReview, LessonProgress, QuizAnswer, QuizAttempt, SpeakingPractice, VideoView
+from .models import (
+    CardReview, ExamResult, LessonProgress, PracticeResult, QuizAnswer, QuizAttempt, SpeakingPractice, VideoView,
+    WritingAnswer,
+)
 
 
 # ---------- levels ----------
@@ -141,6 +144,9 @@ def _activity(user):
         (SpeakingPractice.objects.filter(user=user), "practised_at"),
         (VideoView.objects.filter(user=user), "watched_at"),
         (LessonProgress.objects.filter(user=user), "done_at"),
+        (PracticeResult.objects.filter(user=user), "created_at"),
+        (ExamResult.objects.filter(user=user), "created_at"),
+        (WritingAnswer.objects.filter(user=user), "submitted_at"),
     )
 
 
