@@ -39,7 +39,7 @@ export function informalTime(h, m) {
   return `Es ist ${numberWord(60 - m)} vor ${hourWord(next)}.`;
 }
 
-function ClockFace({ h, m, size = 180 }) {
+export function ClockFace({ h, m, size = 180 }) {
   const pad = (x) => String(x).padStart(2, "0");
   return (
     <svg className="lsn-clock" width={size} height={size} viewBox="0 0 100 100" role="img" aria-label={`A clock showing ${pad(h)}:${pad(m)}`}>
@@ -348,7 +348,7 @@ function SpellWord({ b, onResult }) {
 
 // Type the missing word; several right answers can be separated by | (e.g. "-en|en").
 const norm = (t) => t.replace(/[\u2018\u2019']/g, "").trim().replace(/\s+/g, " ").toLowerCase();
-const accepted = (given, answer) => answer.split("|").some((a) => norm(a) === norm(given));
+export const accepted = (given, answer) => answer.split("|").some((a) => norm(a) === norm(given));
 
 function Blanks({ b, onResult }) {
   const [values, setValues] = useState({});

@@ -1,7 +1,9 @@
 """The teacher edits all learning content here (/admin/)."""
+from django import forms
 from django.contrib import admin
 
 from .models import (
+    ExamPart, PracticeSet, WritingTask,
     GrammarExample, GrammarTopic, Level, QuizOption, QuizQuestion, SpeakingLine, SpeakingTask, Topic,
     VocabularyItem, Video,
 )
@@ -102,3 +104,58 @@ class VideoAdmin(admin.ModelAdmin):
     list_display = ["title", "level", "classroom", "is_published", "created_at"]
     list_filter = ["is_published", "level", "classroom"]
     search_fields = ["title", "description"]
+
+
+class ExamPartForm(forms.ModelForm):
+    class Meta:
+        model = ExamPart
+        fields = "__all__"
+
+    def clean(self):
+        from .exam_a1 import clean_items
+
+        data = super().clean()
+        problems = clean_items(data.get("kind"), data.get("items"), data.get("text", ""))
+        if problems:
+            raise forms.ValidationError(problems)
+        return data
+
+
+@admin.register(ExamPart)
+class ExamPartAdmin(admin.ModelAdmin):
+    form = ExamPartForm
+    list_display = ("title", "level", "exam", "module", "teil", "kind", "is_published")
+    list_filter = ("level", "exam", "module", "is_published")
+    search_fields = ("title", "instructions")
+    prepopulated_fields = {"slug": ("title",)}
+
+
+class PracticeSetForm(forms.ModelForm):
+    class Meta:
+        model = PracticeSet
+        fields = "__all__"
+
+    def clean(self):
+        from .practice import clean_example, clean_set
+
+        data = super().clean()
+        problems = clean_set(data.get("kind"), data.get("items"), data.get("text", ""))
+        problems += clean_example(data.get("kind"), data.get("example"), data.get("text", ""))
+        if problems:
+            raise forms.ValidationError(problems)
+        return data
+
+
+@admin.register(PracticeSet)
+class PracticeSetAdmin(admin.ModelAdmin):
+    form = PracticeSetForm
+    list_display = ("title", "section", "kind", "source", "is_published", "order")
+    list_filter = ("section__level", "section", "kind", "source", "is_published")
+    search_fields = ("title", "intro")
+
+
+@admin.register(WritingTask)
+class WritingTaskAdmin(admin.ModelAdmin):
+    list_display = ("title", "section", "source", "is_published", "order")
+    list_filter = ("section__level", "section", "is_published")
+    search_fields = ("title", "prompt")

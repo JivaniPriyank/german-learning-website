@@ -158,6 +158,54 @@ class LessonProgress(models.Model):
         constraints = [models.UniqueConstraint(fields=["user", "lesson"], name="one_progress_per_user_lesson")]
 
 
+class ExamResult(models.Model):
+    """One finished go at an exam practice set: the score, and whether it was timed."""
+
+    user = models.ForeignKey(USER, on_delete=models.CASCADE, related_name="exam_results")
+    part = models.ForeignKey("content.ExamPart", on_delete=models.CASCADE, related_name="results")
+    score = models.PositiveSmallIntegerField(default=0)
+    total = models.PositiveSmallIntegerField(default=0)
+    timed = models.BooleanField(default=False, help_text="Done in exam mode, with the timer.")
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+
+class PracticeResult(models.Model):
+    """One finished go at a practice set of a Lektion."""
+
+    user = models.ForeignKey(USER, on_delete=models.CASCADE, related_name="practice_results")
+    practice_set = models.ForeignKey("content.PracticeSet", on_delete=models.CASCADE, related_name="results")
+    score = models.PositiveSmallIntegerField(default=0)
+    total = models.PositiveSmallIntegerField(default=0)
+    timed = models.BooleanField(default=False)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+
+class WritingAnswer(models.Model):
+    """A student's answer to a writing task. Sending it again after a check asks for a new check."""
+
+    user = models.ForeignKey(USER, on_delete=models.CASCADE, related_name="writing_answers")
+    task = models.ForeignKey("content.WritingTask", on_delete=models.CASCADE, related_name="answers")
+    text = models.TextField()
+    submitted_at = models.DateTimeField(default=timezone.now)
+    feedback = models.TextField(blank=True)
+    checked_at = models.DateTimeField(null=True, blank=True)
+    checked_by = models.ForeignKey(USER, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
+
+    class Meta:
+        ordering = ["-submitted_at"]
+        constraints = [models.UniqueConstraint(fields=["user", "task"], name="one_writing_answer_per_task")]
+
+    @property
+    def status(self):
+        return "checked" if self.checked_at else "waiting"
+
+
 def speaking_upload_path(instance, filename):
     ext = (filename.rsplit(".", 1)[-1] if "." in filename else "webm").lower()[:5]
     # Random name: the student's name or email never appears in the file path.

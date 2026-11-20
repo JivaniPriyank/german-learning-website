@@ -24,8 +24,9 @@ import Grammar from "./pages/student/Grammar";
 import GrammarTopic from "./pages/student/GrammarTopic";
 import Videos from "./pages/student/Videos";
 import VideoDetail from "./pages/student/VideoDetail";
-import Section from "./pages/student/Section";
+import { LektionenList, LektionPage, PracticeSetPage } from "./pages/student/Lektionen";
 import Lesson from "./pages/student/Lesson";
+import { ExamModule, ExamPart, ExamsHome } from "./pages/student/Exams";
 
 // Teacher pages load only when a teacher opens them, so students never download them.
 const teacherPage = (load, name = "default") => lazy(() => load().then((m) => ({ default: m[name] })));
@@ -37,6 +38,7 @@ const Classes = teacherPage(() => import("./pages/teacher/Classes"), "Classes");
 const ClassEdit = teacherPage(() => import("./pages/teacher/Classes"), "ClassEdit");
 const TeacherVideos = teacherPage(() => import("./pages/teacher/Videos"), "TeacherVideos");
 const VideoEdit = teacherPage(() => import("./pages/teacher/Videos"), "VideoEdit");
+const WritingInbox = teacherPage(() => import("./pages/teacher/Writing"));
 const SpeakingInbox = teacherPage(() => import("./pages/teacher/SpeakingAnswers"), "SpeakingInbox");
 const SpeakingReview = teacherPage(() => import("./pages/teacher/SpeakingAnswers"), "SpeakingReview");
 const ContentHome = teacherPage(() => import("./pages/teacher/content/ContentHome"));
@@ -88,13 +90,18 @@ export default function App() {
           <Route path="practice" element={<Practice />} />
           <Route path="practice/:id" element={<Attempt />} />
           <Route path="practice/:id/results" element={<Results />} />
+          <Route path="exams" element={<ExamsHome />} />
+          <Route path="exams/parts/:id" element={<ExamPart />} />
+          <Route path="exams/:exam/:module" element={<ExamModule />} />
           <Route path="speaking" element={<Speaking />} />
           <Route path="speaking/:level/:slug" element={<SpeakingTask />} />
           <Route path="grammar" element={<Grammar />} />
           <Route path="grammar/:level/:slug" element={<GrammarTopic />} />
           <Route path="videos" element={<Videos />} />
           <Route path="videos/:id" element={<VideoDetail />} />
-          <Route path="sections/:id" element={<Section />} />
+          <Route path="lektionen" element={<LektionenList />} />
+          <Route path="sections/:id" element={<LektionPage />} />
+          <Route path="sections/:sectionId/sets/:id" element={<PracticeSetPage />} />
           <Route path="sections/:sectionId/lessons/:id" element={<Lesson />} />
 
           <Route path="teacher" element={<RequireTeacher />}>
@@ -108,6 +115,7 @@ export default function App() {
             <Route path="videos/new" element={<VideoEdit />} />
             <Route path="videos/:id" element={<VideoEdit />} />
             <Route path="speaking" element={<SpeakingInbox />} />
+            <Route path="writing" element={<WritingInbox />} />
             <Route path="speaking/:id" element={<SpeakingReview />} />
             <Route path="content" element={<ContentHome />} />
             <Route path="content/topics/new" element={<TopicNew />} />
